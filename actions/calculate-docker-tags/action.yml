@@ -1,0 +1,17 @@
+name: Calculate Docker Image Tags (JS)
+description: Compute image tags and return a newline-separated list (JS action)
+inputs:
+  image_name:
+    description: 'Image name (e.g. owner/repo)'
+    required: true
+outputs:
+  tags:
+    description: 'Newline-separated image tags (latest, short sha, timestamp, release)'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: 'tag'
+  color: 'blue'
+
+  

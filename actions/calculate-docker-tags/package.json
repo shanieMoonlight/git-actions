@@ -1,0 +1,17 @@
+{
+  "name": "calculate-docker-tags",
+  "version": "0.1.0",
+  "description": "Calculate Docker image tags for CI",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx esbuild src/index.js --bundle --platform=node --target=node16 --outfile=dist/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.18"
+  }
+}

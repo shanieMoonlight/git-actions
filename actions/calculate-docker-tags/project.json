@@ -1,0 +1,36 @@
+{
+  "name": "calculate-docker-tags",
+  "root": "actions/calculate-docker-tags",
+  "sourceRoot": "actions/calculate-docker-tags/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "commands": [
+          "npm run build --prefix actions/calculate-docker-tags"
+        ],
+        "cwd": ".",
+        "outputPath": "actions/calculate-docker-tags/dist"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "options": {
+        "commands": [
+          "echo 'No tests configured for calculate-docker-tags'"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "echo 'No lint configured for calculate-docker-tags'"
+        ]
+      }
+    }
+  }
+}
