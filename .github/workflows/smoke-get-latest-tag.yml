@@ -10,9 +10,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run get-latest-tag-js action
-        id: get_latest
-        uses: ./.github/actions/get-latest-tag-js
+      - name: Run get-latest-docker-image-tag action
+        id: get_latest_tag
+        uses: ./actions/get-latest-docker-image-tag
         with:
           repo: shaneyboy/movies-client-static
           docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -20,11 +20,11 @@ jobs:
 
       - name: Show result (raw)
         run: |
-          echo "result: ${{ steps.get_latest.outputs.result }}"
+          echo "result: ${{ steps.get_latest_tag.outputs.result }}"
 
       - name: Show parsed fields
         run: |
-          echo "ref: ${{ fromJSON(steps.get_latest.outputs.result).ref }}"
-          echo "repository: ${{ fromJSON(steps.get_latest.outputs.result).repository }}"
-          echo "tag: ${{ fromJSON(steps.get_latest.outputs.result).tag }}"
-          echo "digest: ${{ fromJSON(steps.get_latest.outputs.result).digest }}"
+          echo "ref: ${{ fromJSON(steps.get_latest_tag.outputs.result).ref }}"
+          echo "repository: ${{ fromJSON(steps.get_latest_tag.outputs.result).repository }}"
+          echo "tag: ${{ fromJSON(steps.get_latest_tag.outputs.result).tag }}"
+          echo "digest: ${{ fromJSON(steps.get_latest_tag.outputs.result).digest }}"
