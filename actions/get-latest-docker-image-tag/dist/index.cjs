@@ -38056,11 +38056,6 @@ function validateInputs(repo, dockerUsername, dockerhubToken) {
     core.error("Input `repo` is required (format: namespace/name)");
     import_process.default.exit(2);
   }
-  const repoRe = /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/i;
-  if (!repoRe.test(repo)) {
-    core.error(`Invalid repo format: ${repo}. Expected 'namespace/name'`);
-    import_process.default.exit(2);
-  }
   if (!!dockerUsername && !dockerhubToken || !dockerUsername && !!dockerhubToken) {
     core.warning("Both docker_username and dockerhub_token should be provided for authenticated requests; proceeding unauthenticated.");
   }
