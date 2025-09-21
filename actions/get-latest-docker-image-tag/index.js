@@ -34,12 +34,12 @@ function validateInputs(repo, dockerUsername, dockerhubToken) {
         process.exit(2);
     }
 
-    // Basic validation: namespace/name, allow letters, digits, - _ .
-    const repoRe = /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/i;
-    if (!repoRe.test(repo)) {
-        core.error(`Invalid repo format: ${repo}. Expected 'namespace/name'`);
-        process.exit(2);
-    }
+    // // Basic validation: namespace/name, allow letters, digits, - _ .
+    // const repoRe = /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/i;
+    // if (!repoRe.test(repo)) {
+    //     core.error(`Invalid repo format: ${repo}. Expected 'namespace/name'`);
+    //     process.exit(2);
+    // }
 
     // If only one of username/token is provided, warn the user
     if ((!!dockerUsername && !dockerhubToken) || (!dockerUsername && !!dockerhubToken)) {
