@@ -15,8 +15,8 @@ jobs:
         uses: ./actions/get-latest-docker-image-tag
         with:
           repo: hello-world
-          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          # docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          # dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Show result (raw)
         run: |
