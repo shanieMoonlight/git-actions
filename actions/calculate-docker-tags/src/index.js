@@ -1,10 +1,14 @@
 const core = require('@actions/core');
 const fs = require('fs');
 
+//-------------------------//
+
 function shortSha(sha) {
   if (!sha) return 'unknown';
   return sha.substring(0, 7);
 }
+
+//- - - - - - - - - - - - -//
 
 function utcTimestamp() {
   const d = new Date();
@@ -19,6 +23,8 @@ function utcTimestamp() {
     pad(d.getUTCMinutes()) +
     pad(d.getUTCSeconds());
 }
+
+//-------------------------//
 
 try {
   const imageName = core.getInput('image_name', { required: true });

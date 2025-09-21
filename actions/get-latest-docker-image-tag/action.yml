@@ -1,0 +1,18 @@
+name: 'Get latest tag (JS)'
+description: 'Resolve the latest tag for a Docker Hub repository (prefers timestamped tags) and attempt to resolve digest. Returns a JSON result.'
+inputs:
+  repo:
+    description: 'Repository in namespace/repo format (e.g. shaneyboy/movies-api)'
+    required: true
+  docker_username:
+    description: 'Docker Hub username for authenticated requests'
+    required: false
+  dockerhub_token:
+    description: 'Docker Hub token/password for authenticated requests'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/index.cjs'
+outputs:
+  result:
+    description: 'JSON object with repository, tag, digest, picked_at, ref'
