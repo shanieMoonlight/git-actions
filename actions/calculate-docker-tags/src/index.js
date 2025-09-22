@@ -54,7 +54,7 @@ try {
   const tagsStr = tags.join('\n');
 
   // Set as action outputs
-  core.setOutput('tags', JSON.stringify(tags));
+  core.setOutput('tags', '[' + tags.map(t => '"' + t + '"').join(',') + ']');
   core.setOutput('tags_newline_separated', tagsStr);
   core.info(`Tags outputs set successfully. (#: ${tags.length})`);
 

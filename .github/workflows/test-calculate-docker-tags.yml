@@ -58,7 +58,7 @@ jobs:
           fi
 
           # Fail if 'latest' not present in JSON
-          echo "${{ steps.run.outputs.tags }}" | grep -q '"example-owner/example-repo:latest"' || (
+          echo "${{ steps.run.outputs.tags }}" | grep -q 'example-owner/example-repo:latest' || (
             echo "Expected 'latest' tag not found in JSON action output" >&2
             exit 1
           )

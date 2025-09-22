@@ -19906,7 +19906,7 @@ try {
     core.info(`Added tag from environment: ${releaseTag}`);
   }
   const tagsStr = tags.join("\n");
-  core.setOutput("tags", JSON.stringify(tags));
+  core.setOutput("tags", "[" + tags.map((t) => '"' + t + '"').join(",") + "]");
   core.setOutput("tags_newline_separated", tagsStr);
   core.info(`Tags outputs set successfully. (#: ${tags.length})`);
   const workspace = process.env.GITHUB_WORKSPACE;
