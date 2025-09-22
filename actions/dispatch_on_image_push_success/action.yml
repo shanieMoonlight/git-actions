@@ -43,11 +43,6 @@ runs:
           exit 1
         fi
 
-        if [ -z "${TAGS:-}" ]; then
-          echo "::error::TAGS is empty. Docker build did not return any tags; aborting dispatch."
-          exit 1
-        fi
-
         # Generate ISO-8601 UTC timestamp for the payload
         TIMESTAMP="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
@@ -68,9 +63,9 @@ runs:
           -H "Authorization: Bearer ${TARGET_REPO_TOKEN}" \
           -d "$PAYLOAD" \
           "https://api.github.com/repos/${TARGET_REPO}/dispatches"; then
-          echo "result=Dispatched successfully to ${{ inputs.target_repo }} with event ${{ inputs.repository_dispatch_event }}" >> $GITHUB_OUTPUT
+          echo "result=Dispatched successfully to ${TARGET_REPO} with event ${EVENT_TYPE}" >> $GITHUB_OUTPUT
         else
-          echo "result=Dispatch failed to ${{ inputs.target_repo }}" >> $GITHUB_OUTPUT
+          echo "result=Dispatch failed to ${TARGET_REPO}" >> $GITHUB_OUTPUT
           exit 1
         fi
       shell: bash

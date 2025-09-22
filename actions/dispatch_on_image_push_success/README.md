@@ -88,7 +88,6 @@ The repository dispatch event will include a `client_payload` with the following
 The action will fail if:
 - `target_repo` is not provided
 - `target_repo_pat` is not provided
-- `tags` input is empty (this input is effectively required for the dispatch to be meaningful, even though marked as optional in the YAML)
 - The API call to GitHub fails (non-2xx response)
 
 ## Contributing
