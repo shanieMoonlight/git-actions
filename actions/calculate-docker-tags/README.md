@@ -2,7 +2,7 @@
 
 > Calculate Docker image tags for CI
 
-This JavaScript action computes image tags (latest, short SHA, timestamp, release) and returns them as a newline-separated string via the `tags` output.
+This JavaScript action computes image tags (latest, short SHA, timestamp, release) and returns them in two formats: a JSON array and a newline-separated string.
 
 ## Usage
 
@@ -17,11 +17,12 @@ In a workflow step:
 
 ## Inputs
 
-- `image_name` (required): Image name (e.g. owner/repo)
+- `image_name` (required): Image name (e.g. `owner/repo`)
 
 ## Outputs
 
-- `tags`: Newline-separated image tags (latest, short sha, timestamp, release)
+- `tags`: JSON array of image tags (e.g. `["owner/repo:latest", "owner/repo:abc1234"]`)
+- `tags_newline_separated`: Newline-separated image tags (e.g. `owner/repo:latest\nowner/repo:abc1234`)
 
 ## Build
 

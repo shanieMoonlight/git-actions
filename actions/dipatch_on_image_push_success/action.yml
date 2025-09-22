@@ -1,19 +1,17 @@
-name: Docker Build and Push with Multiple Tags (Latest, Datetime, and Git SHA)
-description: Composite action to calculate tags, login to Docker Hub, set up buildx, and build/push Docker images.
+name: Dispatch on Image Push Success
+description: Informs another repo that a Docker image has been successfully pushed.
 author: shanieMoonlight
 inputs:
-  image_name:
-    description: 'Docker image name (e.g. owner/repo)'
+  target_repo:
+    description: 'Repo to inform (e.g. owner/repo)'
     required: true
-  dockerfile:
-    description: 'Path to Dockerfile'
+  repo_pat:
+    description: 'Personal Access Token for target_repo with repo permissions (pass via workflow secrets)'
     required: false
-    default: 'Dockerfile'
-  context:
-    description: 'Build context'
+  tags:
+    description: 'Tags of the image that was pushed (comma-separated)'
     required: false
-    default: '.'
-  push:
+  digest:
     description: 'Whether to push the image (true/false)'
     required: false
     default: 'true'
@@ -76,7 +74,7 @@ runs:
         context: ${{ inputs.context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.push }}
-        tags: ${{ steps.calc.outputs.tags_newline_separated }}
+        tags: ${{ steps.calc.outputs.tags }}
         pull: true
         cache-from: type=gha
         cache-to: type=gha,mode=max

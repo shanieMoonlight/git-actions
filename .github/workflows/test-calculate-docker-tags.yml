@@ -26,19 +26,39 @@ jobs:
       - name: Show output
         run: |
           echo "Tags output from step: <<<<"  
+          echo "${{ steps.run.outputs.tags_newline_separated }}"  
+          echo ">>>>"
+
+      - name: Show JSON tags
+        run: |
+          echo "JSON Tags output: <<<<"  
           echo "${{ steps.run.outputs.tags }}"  
           echo ">>>>"
 
       - name: Assert tags
         run: |
           # Fail if output is empty
-          if [ -z "${{ steps.run.outputs.tags }}" ]; then
+          if [ -z "${{ steps.run.outputs.tags_newline_separated }}" ]; then
             echo "No tags were produced by the action" >&2
             exit 1
           fi
 
           # Fail if 'latest' not present (adjust as needed for your expected tags)
-          echo "${{ steps.run.outputs.tags }}" | grep -q "latest" || (
+          echo "${{ steps.run.outputs.tags_newline_separated }}" | grep -q "latest" || (
             echo "Expected 'latest' tag not found in action output" >&2
+            exit 1
+          )
+
+      - name: Assert JSON tags
+        run: |
+          # Fail if output is empty
+          if [ -z "${{ steps.run.outputs.tags }}" ]; then
+            echo "No JSON tags were produced by the action" >&2
+            exit 1
+          fi
+
+          # Fail if 'latest' not present in JSON
+          echo "${{ steps.run.outputs.tags }}" | grep -q '"ghcr.io/example-owner/example-repo:latest"' || (
+            echo "Expected 'latest' tag not found in JSON action output" >&2
             exit 1
           )

@@ -6,6 +6,8 @@ inputs:
     required: true
 outputs:
   tags:
+    description: 'JSON array of image tags'
+  tags_newline_separated:
     description: 'Newline-separated image tags (latest, short sha, timestamp, release)'
 runs:
   using: 'node20'

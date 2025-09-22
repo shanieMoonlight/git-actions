@@ -53,9 +53,10 @@ try {
 
   const tagsStr = tags.join('\n');
 
-  // Set as action output
-  core.setOutput('tags', tagsStr);
-  core.info(`Tags output set successfully. (#: ${tags.length})`);
+  // Set as action outputs
+  core.setOutput('tags', JSON.stringify(tags));
+  core.setOutput('tags_newline_separated', tagsStr);
+  core.info(`Tags outputs set successfully. (#: ${tags.length})`);
 
   // Also write to .image-tags for workflows that prefer reading a file
   const workspace = process.env.GITHUB_WORKSPACE;
