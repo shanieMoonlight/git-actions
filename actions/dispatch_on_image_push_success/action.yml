@@ -8,6 +8,9 @@ inputs:
   target_repo_pat:
     description: 'Personal Access Token for target_repo with repo permissions (pass via workflow secrets)'
     required: true
+  repository_dispatch_event:
+    description: 'Name of the repository_dispatch event to trigger in target_repo'
+    required: true
   tags:
     description: 'Tags of the image that was pushed (JSON array)'
     required: false
@@ -17,9 +20,6 @@ inputs:
   image_name:
     description: 'Docker image name (e.g. owner/repo)'
     required: false
-  repository_dispatch_event:
-    description: 'Name of the repository_dispatch event to trigger in target_repo'
-    required: true
 outputs:
   result:
     description: 'Result message confirming the dispatch attempt'
@@ -73,3 +73,4 @@ runs:
           echo "result=Dispatch failed to ${{ inputs.target_repo }}" >> $GITHUB_OUTPUT
           exit 1
         fi
+      shell: bash
