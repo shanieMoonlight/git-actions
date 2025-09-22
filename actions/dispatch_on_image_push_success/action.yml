@@ -1,0 +1,75 @@
+name: Dispatch on Image Push Success
+description: Informs another git repo that a Docker image has been successfully pushed.
+author: shanieMoonlight
+inputs:
+  target_repo:
+    description: 'Repo to inform (e.g. owner/repo)'
+    required: true
+  repo_pat:
+    description: 'Personal Access Token for target_repo with repo permissions (pass via workflow secrets)'
+    required: true
+  tags:
+    description: 'Tags of the image that was pushed (JSON array)'
+    required: false
+  digest:
+    description: 'Docker image digest (sha256:...)'
+    required: false
+  image_name:
+    description: 'Docker image name (e.g. owner/repo)'
+    required: false
+  repository_dispatch_event:
+    description: 'Name of the repository_dispatch event to trigger in target_repo'
+    required: true
+outputs:
+  result:
+    description: 'Result message confirming the dispatch attempt'
+    value: ${{ steps.dispatch.outputs.result }}
+runs:
+  using: composite
+  steps:
+    - name: Dispatch repository event
+      id: dispatch
+      env:
+        TARGET_REPO: ${{ inputs.target_repo }}
+        TARGET_REPO_TOKEN: ${{ inputs.repo_pat }}
+        TAGS: ${{ inputs.tags }}
+        DIGEST: ${{ inputs.digest }}
+        EVENT_TYPE: ${{ inputs.repository_dispatch_event }}
+        IMAGE_NAME: ${{ inputs.image_name }}
+      run: |
+        # Basic validation: fail early with clear error messages
+        if [ -z "${TARGET_REPO_TOKEN:-}" ]; then
+          echo "::error::TARGET_REPO_TOKEN is empty. Set the secret TARGET_REPO_TOKEN and try again."
+          exit 1
+        fi
+
+        if [ -z "${TAGS:-}" ]; then
+          echo "::error::TAGS is empty. Docker build did not return any tags; aborting dispatch."
+          exit 1
+        fi
+
+        # Generate ISO-8601 UTC timestamp for the payload
+        TIMESTAMP="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+        # Build payload (jq ensures JSON safety)
+        PAYLOAD=$(jq -n \
+          --arg event_type "$EVENT_TYPE" \
+          --arg repository "${{ env.IMAGE_NAME }}" \
+          --arg tags "$TAGS" \
+          --arg digest "$DIGEST" \
+          --arg commit "${{ github.sha }}" \
+          --arg run_id "${{ github.run_id }}" \
+          --arg timestamp "$TIMESTAMP" \
+          '{event_type:$event_type, client_payload:{repository:$repository,tags:$tags,digest:$digest,commit:$commit,run_id:$run_id,timestamp:$timestamp}}')
+
+        # Dispatch to target repository (uses PAT stored in TARGET_REPO_TOKEN)
+        if curl --fail -sS -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${TARGET_REPO_TOKEN}" \
+          -d "$PAYLOAD" \
+          "https://api.github.com/repos/${TARGET_REPO}/dispatches"; then
+          echo "result=Dispatched successfully to ${{ inputs.target_repo }} with event ${{ inputs.repository_dispatch_event }}" >> $GITHUB_OUTPUT
+        else
+          echo "result=Dispatch failed to ${{ inputs.target_repo }}" >> $GITHUB_OUTPUT
+          exit 1
+        fi
