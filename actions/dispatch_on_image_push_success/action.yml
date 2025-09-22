@@ -5,7 +5,7 @@ inputs:
   target_repo:
     description: 'Repo to inform (e.g. owner/repo)'
     required: true
-  repo_pat:
+  target_repo_pat:
     description: 'Personal Access Token for target_repo with repo permissions (pass via workflow secrets)'
     required: true
   tags:
@@ -31,7 +31,7 @@ runs:
       id: dispatch
       env:
         TARGET_REPO: ${{ inputs.target_repo }}
-        TARGET_REPO_TOKEN: ${{ inputs.repo_pat }}
+        TARGET_REPO_TOKEN: ${{ inputs.target_repo_pat }}
         TAGS: ${{ inputs.tags }}
         DIGEST: ${{ inputs.digest }}
         EVENT_TYPE: ${{ inputs.repository_dispatch_event }}
