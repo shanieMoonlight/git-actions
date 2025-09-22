@@ -21,7 +21,7 @@ jobs:
         id: run
         uses: ./actions/calculate-docker-tags
         with:
-          image_name: ghcr.io/example-owner/example-repo
+          image_name: example-owner/example-repo
 
       - name: Show output
         run: |
@@ -58,7 +58,7 @@ jobs:
           fi
 
           # Fail if 'latest' not present in JSON
-          echo "${{ steps.run.outputs.tags }}" | grep -q '"ghcr.io/example-owner/example-repo:latest"' || (
+          echo "${{ steps.run.outputs.tags }}" | grep -q '"example-owner/example-repo:latest"' || (
             echo "Expected 'latest' tag not found in JSON action output" >&2
             exit 1
           )
