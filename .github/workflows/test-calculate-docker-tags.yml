@@ -97,7 +97,8 @@ jobs:
             exit 1
           fi
           # shortSha should be 7 characters
-          if [ ${#${{ steps.run.outputs.tag_shortSha }}} -ne 7 ]; then
+          SHORT_SHA="${{ steps.run.outputs.tag_shortSha }}"
+          if [ ${#SHORT_SHA} -ne 7 ]; then
             echo "tag_shortSha is not 7 characters" >&2
             exit 1
           fi
