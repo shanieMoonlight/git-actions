@@ -65,21 +65,39 @@ jobs:
 
       - name: Show tags_data
         run: |
-          echo "Tags data output: <<<<"
-          echo "${{ steps.run.outputs.tags_data }}"
-          echo ">>>>"
+          echo "Tag components:"
+          echo "latest: ${{ steps.run.outputs.tag_latest }}"
+          echo "timestamp: ${{ steps.run.outputs.tag_timestamp }}"
+          echo "shortSha: ${{ steps.run.outputs.tag_shortSha }}"
 
-      - name: Assert tags_data
+      - name: Assert tag components
         run: |
-          # Fail if output is empty
-          if [ -z "${{ steps.run.outputs.tags_data }}" ]; then
-            echo "No tags_data were produced by the action" >&2
+          # Check that outputs are not empty
+          if [ -z "${{ steps.run.outputs.tag_latest }}" ]; then
+            echo "tag_latest is empty" >&2
+            exit 1
+          fi
+          if [ -z "${{ steps.run.outputs.tag_timestamp }}" ]; then
+            echo "tag_timestamp is empty" >&2
+            exit 1
+          fi
+          if [ -z "${{ steps.run.outputs.tag_shortSha }}" ]; then
+            echo "tag_shortSha is empty" >&2
             exit 1
           fi
 
-          # Check if it's valid JSON and contains expected keys
-          TAGS_DATA="${{ steps.run.outputs.tags_data }}"
-          echo "$TAGS_DATA" | jq -e '.latest == "latest" and .timestamp and .shortSha' > /dev/null || (
-            echo "tags_data does not contain expected structure" >&2
+          # Check specific values
+          if [ "${{ steps.run.outputs.tag_latest }}" != "latest" ]; then
+            echo "tag_latest is not 'latest'" >&2
             exit 1
-          )
+          fi
+          # timestamp should be in format YYYYMMDD_HHMMSS
+          if ! echo "${{ steps.run.outputs.tag_timestamp }}" | grep -q '^[0-9]\{8\}_[0-9]\{6\}$'; then
+            echo "tag_timestamp does not match expected format" >&2
+            exit 1
+          fi
+          # shortSha should be 7 characters
+          if [ ${#${{ steps.run.outputs.tag_shortSha }}} -ne 7 ]; then
+            echo "tag_shortSha is not 7 characters" >&2
+            exit 1
+          fi

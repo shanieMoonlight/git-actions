@@ -56,8 +56,9 @@ try {
   // Set as action outputs
   core.setOutput('tags', '[' + tags.map(t => '"' + t + '"').join(',') + ']');
   core.setOutput('tags_newline_separated', tagsStr);
-  const tagsDataJson = '{"latest":"' + 'latest' + '","timestamp":"' + ts + '","shortSha":"' + short + '"}';
-  core.setOutput('tags_data', tagsDataJson);
+  core.setOutput('tag_latest', 'latest');
+  core.setOutput('tag_timestamp', ts);
+  core.setOutput('tag_shortSha', short);
   core.info(`Tags outputs set successfully. (#: ${tags.length})`);
 
   // Also write to .image-tags for workflows that prefer reading a file

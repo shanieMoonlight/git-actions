@@ -19908,8 +19908,9 @@ try {
   const tagsStr = tags.join("\n");
   core.setOutput("tags", "[" + tags.map((t) => '"' + t + '"').join(",") + "]");
   core.setOutput("tags_newline_separated", tagsStr);
-  const tagsDataJson = '{"latest":"latest","timestamp":"' + ts + '","shortSha":"' + short + '"}';
-  core.setOutput("tags_data", tagsDataJson);
+  core.setOutput("tag_latest", "latest");
+  core.setOutput("tag_timestamp", ts);
+  core.setOutput("tag_shortSha", short);
   core.info(`Tags outputs set successfully. (#: ${tags.length})`);
   const workspace = process.env.GITHUB_WORKSPACE;
   if (workspace) {
