@@ -1,0 +1,18 @@
+name: 'render-compose-js'
+description: 'Render docker-compose.yml from a template and services list (JavaScript version)'
+inputs:
+  template:
+    description: 'Path to docker-compose template'
+    required: true
+  services:
+    description: 'Path to services JSON (array of {name,repo,placeholder})'
+    required: true
+  docker_username:
+    description: 'Docker username (passed to tag resolution)'
+    required: false
+  dockerhub_token:
+    description: 'Dockerhub token (passed to tag resolution)'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/index.cjs'

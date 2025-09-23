@@ -1,0 +1,22 @@
+{
+  "name": "render-compose-js",
+  "version": "0.1.0",
+  "description": "Render docker-compose.yml from template and services (GitHub Action)",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx esbuild index.js --bundle --platform=node --target=node20 --format=cjs --outfile=dist/index.cjs",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "undici": "^6.0.0",
+    "@actions/core": "^1.11.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.18",
+    "vitest": "^1.0.0"
+  }
+}
