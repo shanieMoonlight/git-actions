@@ -57,8 +57,8 @@ try {
   core.setOutput('tags', '[' + tags.map(t => '"' + t + '"').join(',') + ']');
   core.setOutput('tags_newline_separated', tagsStr);
   core.setOutput('tag_latest', 'latest');
-  core.setOutput('tag_timestamp', ts);
-  core.setOutput('tag_shortSha', short);
+  core.setOutput('tag_timestamp', ts.trim());
+  core.setOutput('tag_shortSha', short.trim());
   core.info(`Tags outputs set successfully. (#: ${tags.length})`);
 
   // Also write to .image-tags for workflows that prefer reading a file
