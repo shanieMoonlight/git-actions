@@ -9,6 +9,8 @@ outputs:
     description: 'JSON array of image tags'
   tags_newline_separated:
     description: 'Newline-separated image tags (latest, short sha, timestamp, release)'
+  tags_data:
+    description: 'JSON object with tag components (latest, timestamp, shortSha)'
 runs:
   using: 'node20'
   main: 'dist/index.js'

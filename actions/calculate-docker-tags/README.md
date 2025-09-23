@@ -23,6 +23,7 @@ In a workflow step:
 
 - `tags`: JSON array of image tags (e.g. `["owner/repo:latest", "owner/repo:abc1234"]`)
 - `tags_newline_separated`: Newline-separated image tags (e.g. `owner/repo:latest\nowner/repo:abc1234`)
+- `tags_data`: JSON object with tag components (e.g. `{"latest":"latest","timestamp":"20231201_120000","shortSha":"abc1234"}`)
 
 ## Build
 

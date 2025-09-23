@@ -42,9 +42,9 @@ function validateInputs(repo, dockerUsername, dockerhubToken) {
     // }
 
     // If only one of username/token is provided, warn the user
-    if ((!!dockerUsername && !dockerhubToken) || (!dockerUsername && !!dockerhubToken)) {
+    if ((!!dockerUsername && !dockerhubToken) || (!dockerUsername && !!dockerhubToken)) 
         core.warning('Both docker_username and dockerhub_token should be provided for authenticated requests; proceeding unauthenticated.');
-    }
+    
 }
 
 //- - - - - - - - - - - - -//
@@ -52,8 +52,11 @@ function validateInputs(repo, dockerUsername, dockerhubToken) {
 function envOrInput(name) {
     // Prefer @actions/core if available (works when running as an action)
     try {
+        
         const val = core.getInput(name);
-        if (val) return val;
+        if (val) 
+            return val
+
     } catch (e) {
         // fall back to env
     }
@@ -184,9 +187,10 @@ async function fetchManifestDigest(repo, tag, token, { logger = getLogger() } = 
                 break;
             }
         }
-        if (!digest && res.headers && res.headers['docker-content-digest']) {
+        
+        if (!digest && res.headers && res.headers['docker-content-digest']) 
             digest = res.headers['docker-content-digest'];
-        }
+        
         if (Array.isArray(digest))
             digest = digest[0] || '';
 
@@ -218,8 +222,9 @@ function getLogger() {
 
 // Centralized output writer: prefers @actions/core, falls back to GITHUB_OUTPUT file, else stdout
 async function setOutput(name, value) {
+    
     const json = typeof value === 'string' ? value : JSON.stringify(value);
-    // try core.setOutput when running as an action
+
     try {
         core.setOutput(name, json);
         return;
@@ -241,7 +246,9 @@ async function setOutput(name, value) {
     
 }
 
+
 //-------------------------//
+
 
 async function main() {
 
@@ -287,7 +294,7 @@ async function main() {
 
     // Print result as JSON and write to the GitHub Actions output
     const json = JSON.stringify(result);
-    console.log(json);
+    console.log('Result: ',  json);
     await setOutput('result', json);
 
 

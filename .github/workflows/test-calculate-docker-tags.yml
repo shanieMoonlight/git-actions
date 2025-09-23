@@ -62,3 +62,23 @@ jobs:
             echo "Expected 'latest' tag not found in JSON action output" >&2
             exit 1
           )
+
+      - name: Show tags_data
+        run: |
+          echo "Tags data output: <<<<"
+          echo "${{ steps.run.outputs.tags_data }}"
+          echo ">>>>"
+
+      - name: Assert tags_data
+        run: |
+          # Fail if output is empty
+          if [ -z "${{ steps.run.outputs.tags_data }}" ]; then
+            echo "No tags_data were produced by the action" >&2
+            exit 1
+          fi
+
+          # Check if it's valid JSON and contains expected keys
+          echo "${{ steps.run.outputs.tags_data }}" | jq -e '.latest == "latest" and .timestamp and .shortSha' > /dev/null || (
+            echo "tags_data does not contain expected structure" >&2
+            exit 1
+          )
