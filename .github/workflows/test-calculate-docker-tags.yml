@@ -78,7 +78,8 @@ jobs:
           fi
 
           # Check if it's valid JSON and contains expected keys
-          echo "${{ steps.run.outputs.tags_data }}" | jq -e '.latest == "latest" and .timestamp and .shortSha' > /dev/null || (
+          TAGS_DATA="${{ steps.run.outputs.tags_data }}"
+          echo "$TAGS_DATA" | jq -e '.latest == "latest" and .timestamp and .shortSha' > /dev/null || (
             echo "tags_data does not contain expected structure" >&2
             exit 1
           )
