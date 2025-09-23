@@ -1,0 +1,42 @@
+name: 'package-and-upload-zip'
+description: 'Package a file into a timestamped zip and upload as artifact'
+inputs:
+  file_to_zip:
+    description: 'Path to the file to zip'
+    required: true
+    default: 'docker-compose.yml'
+  zip_prefix:
+    description: 'Prefix for the zip filename (before timestamp)'
+    required: false
+    default: 'deploy'
+  artifact_name:
+    description: 'Name for the uploaded artifact'
+    required: false
+    default: 'deploy-package'
+  retention_days:
+    description: 'Number of days to retain the artifact'
+    required: false
+    default: '7'
+outputs:
+  zip_name:
+    description: 'The generated zip filename'
+    value: ${{ steps.create_zip.outputs.zip_name }}
+runs:
+  using: "composite"
+  steps:
+    - name: Package file into timestamped zip
+      id: create_zip
+      shell: bash
+      run: |
+        TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+        ZIP_NAME="${{ inputs.zip_prefix }}_${TIMESTAMP}.zip"
+        zip "$ZIP_NAME" "${{ inputs.file_to_zip }}"
+        echo "Created $ZIP_NAME with ${{ inputs.file_to_zip }}"
+        echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+
+    - name: Upload zip as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ steps.create_zip.outputs.zip_name }}
+        retention-days: ${{ inputs.retention_days }}
