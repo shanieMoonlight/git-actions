@@ -56,7 +56,7 @@ async function resolveLatestTag(repo, dockerUsername, dockerhubToken) {
             tag,
             digest: digest || '',
             picked_at,
-            ref: digest ? `${repo}@${digest}` : `${repo}:${tag}`
+            ref: `${repo}:${tag}`
         };
         return result;
     }
