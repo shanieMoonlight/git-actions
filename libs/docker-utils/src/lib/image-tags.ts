@@ -5,7 +5,7 @@ import { DockerTag, DockerTagsResponse } from './image-tag-responses.js';
 
 //#########################//
 
-export function extractTagTimestamp(entry: any): number {
+export function extractTagTimestamp(entry: DockerTag): number {
 
     const name = (entry.name || '').trim();
     // Try last_updated first and return immediately if valid
