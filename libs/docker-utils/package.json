@@ -18,6 +18,10 @@
     "dist",
     "!**/*.tsbuildinfo"
   ],
+  "scripts": {
+    "build": "tsc --build tsconfig.lib.json",
+    "test": "vitest run"
+  },
   "nx": {
     "name": "docker-utils",
     "tags": [
@@ -26,5 +30,8 @@
   },
   "dependencies": {
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
   }
 }
