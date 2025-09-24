@@ -1,8 +1,10 @@
 import { fetchJson } from './http.js';
 
 export async function fetchRegistryToken(repo, { dockerUsername = '', dockerhubToken = '', logger = console } = {}) {
+
   try {
     const tokenUrl = `https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull`;
+
 
     if (dockerUsername && dockerhubToken) {
       const auth = Buffer.from(`${dockerUsername}:${dockerhubToken}`).toString('base64');
