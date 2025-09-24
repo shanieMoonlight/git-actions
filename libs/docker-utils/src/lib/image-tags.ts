@@ -1,9 +1,9 @@
 import { DockerCredentials } from './docker-credentials.js';
-import { fetchJson } from './http.js';
+import { fetchJson, fetchText } from './http.js';
 
 //#########################//
 
-export function scoreEntry(entry: any): number {
+export function extractTagTimestamp(entry: any): number {
 
     const name = (entry.name || '').trim();
     // Try last_updated first and return immediately if valid
@@ -29,7 +29,7 @@ export function scoreEntry(entry: any): number {
 
 //- - - - - - - - - - - - -//
 
-export function pickTagFromApiJson(apiJson: any): string {
+export function selectLatestTagFromApiJson(apiJson: any): string {
 
     if (!apiJson || !Array.isArray(apiJson.results))
         return '';
@@ -47,7 +47,7 @@ export function pickTagFromApiJson(apiJson: any): string {
     const pool = tsLike.length > 0 ? tsLike : candidates;
 
     // Sort by computed score (older -> newer) and pick the newest
-    pool.sort((a: any, b: any) => scoreEntry(a) - scoreEntry(b));
+    pool.sort((a: any, b: any) => extractTagTimestamp(a) - extractTagTimestamp(b));
     const chosen = pool[pool.length - 1];
 
     return chosen && chosen.name ? chosen.name : '';
@@ -61,7 +61,7 @@ export async function fetchRepoTags(
     { pageSize = 100, maxPages = 5, logger = console } = {}
 ): Promise<{ results: any[] }> {
 
-    const { dockerUsername, dockerToken } = dockerCredentials
+    const { dockerUsername, dockerhubToken } = dockerCredentials
 
     const base = `https://hub.docker.com/v2/repositories/${repo}/tags/?page_size=${pageSize}`;
     const combined: any[] = [];
@@ -72,8 +72,8 @@ export async function fetchRepoTags(
         while (url && page < maxPages) {
             page += 1;
             const headers: Record<string, string> = {};
-            if (dockerUsername && dockerToken) {
-                const auth = Buffer.from(`${dockerUsername}:${dockerToken}`).toString('base64');
+            if (dockerUsername && dockerhubToken) {
+                const auth = Buffer.from(`${dockerUsername}:${dockerhubToken}`).toString('base64');
                 headers.Authorization = `Basic ${auth}`;
             }
 
@@ -101,6 +101,43 @@ export async function fetchRepoTags(
     } catch (err: any) {
         logger.error && logger.error('Failed to fetch tags from Docker Hub', err.message || err);
         throw err;
+    }
+}
+
+//- - - - - - - - - - - - -//
+
+export async function fetchManifestDigest(repo: string, tag: string, authToken: string): Promise<string> {
+
+    if (!authToken) 
+        return '';
+
+    try {
+        const manifestUrl = `https://registry-1.docker.io/v2/${repo}/manifests/${tag}`;
+        const res = await fetchText(manifestUrl, {
+            method: 'HEAD',
+            headers: {
+                Authorization: `Bearer ${authToken}`,
+                Accept: 'application/vnd.docker.distribution.manifest.v2+json'
+            }
+        });
+
+        let digest = '';
+        const hdrs = res.headers || {};
+        for (const [name, value] of Object.entries(hdrs)) {
+            if (name && typeof name === 'string' && name.toLowerCase() === 'docker-content-digest') {
+                digest = Array.isArray(value) ? value[0] || '' : value || '';
+                break;
+            }
+        }
+
+        if (!digest && res.headers && res.headers['docker-content-digest']) {
+            const hdr = res.headers['docker-content-digest'];
+            digest = Array.isArray(hdr) ? hdr[0] || '' : hdr || '';
+        }
+
+        return digest || '';
+    } catch (e) {
+        return '';
     }
 }
 

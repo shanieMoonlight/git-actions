@@ -1,7 +1,7 @@
-import process from 'process';
 import * as core from '@actions/core';
-import { fetchText, fetchJson } from './http.js';
-import { fetchRegistryToken } from './registry-token.js';
+import { fetchManifestDigest, fetchRegistryToken, fetchRepoTags, selectLatestTagFromApiJson } from '@git-actions/docker-utils';
+import process from 'process';
+// import { fetchRegistryToken } from './registry-token.js';
 
 
 //#########################//
@@ -42,9 +42,9 @@ function validateInputs(repo, dockerUsername, dockerhubToken) {
     // }
 
     // If only one of username/token is provided, warn the user
-    if ((!!dockerUsername && !dockerhubToken) || (!dockerUsername && !!dockerhubToken)) 
+    if ((!!dockerUsername && !dockerhubToken) || (!dockerUsername && !!dockerhubToken))
         core.warning('Both docker_username and dockerhub_token should be provided for authenticated requests; proceeding unauthenticated.');
-    
+
 }
 
 //- - - - - - - - - - - - -//
@@ -52,9 +52,9 @@ function validateInputs(repo, dockerUsername, dockerhubToken) {
 function envOrInput(name) {
     // Prefer @actions/core if available (works when running as an action)
     try {
-        
+
         const val = core.getInput(name);
-        if (val) 
+        if (val)
             return val
 
     } catch (e) {
@@ -66,151 +66,111 @@ function envOrInput(name) {
 
 //- - - - - - - - - - - - -//
 
-// Helper to parse last_updated or extract timestamp from name like 20230101_123456
-export function scoreEntry(entry) {
-    const name = (entry.name || '').trim();
-    // Try last_updated first and return immediately if valid
-    if (entry.last_updated) {
-        const parsed = Date.parse(entry.last_updated);
-        if (!Number.isNaN(parsed))
-            return parsed;
-    }
+// // Helper to parse last_updated or extract timestamp from name like 20230101_123456
+// export function scoreEntry(entry) {
+//     const name = (entry.name || '').trim();
+//     // Try last_updated first and return immediately if valid
+//     if (entry.last_updated) {
+//         const parsed = Date.parse(entry.last_updated);
+//         if (!Number.isNaN(parsed))
+//             return parsed;
+//     }
 
-    // Otherwise try to parse timestamp-like name (early-return when not matching)
-    const m = name.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/);
-    if (!m)
-        return 0;
+//     // Otherwise try to parse timestamp-like name (early-return when not matching)
+//     const m = name.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/);
+//     if (!m)
+//         return 0;
 
-    // Build ISO string YYYY-MM-DDTHH:MM:SSZ
-    const iso = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
-    const p = Date.parse(iso);
-    if (!Number.isNaN(p))
-        return p;
+//     // Build ISO string YYYY-MM-DDTHH:MM:SSZ
+//     const iso = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
+//     const p = Date.parse(iso);
+//     if (!Number.isNaN(p))
+//         return p;
 
-    return 0;
-}
+//     return 0;
+// }
 
-//- - - - - - - - - - - - -//
+// //- - - - - - - - - - - - -//
 
-export function pickTagFromApiJson(apiJson) {
+// export function pickTagFromApiJson(apiJson) {
 
-    if (!apiJson || !Array.isArray(apiJson.results))
-        return '';
+//     if (!apiJson || !Array.isArray(apiJson.results))
+//         return '';
 
-    // Normalize and filter results: must have a name and not be 'latest'
-    const candidates = apiJson.results
-        .filter(r => r && typeof r.name === 'string')
-        .filter(r => r.name.toLowerCase() !== 'latest');
+//     // Normalize and filter results: must have a name and not be 'latest'
+//     const candidates = apiJson.results
+//         .filter(r => r && typeof r.name === 'string')
+//         .filter(r => r.name.toLowerCase() !== 'latest');
 
-    if (candidates.length === 0)
-        return '';
+//     if (candidates.length === 0)
+//         return '';
 
-    // Prefer timestamp-like names if present among candidates
-    const tsLike = candidates.filter(r => /\d{8}_\d{6}/.test(r.name));
-    const pool = tsLike.length > 0 ? tsLike : candidates;
+//     // Prefer timestamp-like names if present among candidates
+//     const tsLike = candidates.filter(r => /\d{8}_\d{6}/.test(r.name));
+//     const pool = tsLike.length > 0 ? tsLike : candidates;
 
-    // Sort by computed score (older -> newer) and pick the newest
-    pool.sort((a, b) => scoreEntry(a) - scoreEntry(b));
-    const chosen = pool[pool.length - 1];
+//     // Sort by computed score (older -> newer) and pick the newest
+//     pool.sort((a, b) => scoreEntry(a) - scoreEntry(b));
+//     const chosen = pool[pool.length - 1];
 
-    return chosen && chosen.name ? chosen.name : '';
-}
+//     return chosen && chosen.name ? chosen.name : '';
+// }
 
-//- - - - - - - - - - - - -//
+// //- - - - - - - - - - - - -//
 
-async function fetchRepoTags(repo, { dockerUsername = '', dockerhubToken = '', pageSize = 100, maxPages = 5, logger = getLogger() } = {}) {
-    const base = `https://hub.docker.com/v2/repositories/${repo}/tags/?page_size=${pageSize}`;
-    const combined = [];
-    let url = base;
-    let page = 0;
+// async function fetchRepoTags(repo, { dockerUsername = '', dockerhubToken = '', pageSize = 100, maxPages = 5, logger = getLogger() } = {}) {
+//     const base = `https://hub.docker.com/v2/repositories/${repo}/tags/?page_size=${pageSize}`;
+//     const combined = [];
+//     let url = base;
+//     let page = 0;
 
-    try {
-        while (url && page < maxPages) {
-            page += 1;
-            const headers = {};
-            if (dockerUsername && dockerhubToken) {
-                const auth = Buffer.from(`${dockerUsername}:${dockerhubToken}`).toString('base64');
-                headers.Authorization = `Basic ${auth}`;
-            }
+//     try {
+//         while (url && page < maxPages) {
+//             page += 1;
+//             const headers = {};
+//             if (dockerUsername && dockerhubToken) {
+//                 const auth = Buffer.from(`${dockerUsername}:${dockerhubToken}`).toString('base64');
+//                 headers.Authorization = `Basic ${auth}`;
+//             }
 
-            const res = await fetchJson(url, { headers });
-            if (!res || typeof res.status !== 'number')
-                throw new Error('Empty response from Docker Hub tags API');
+//             const res = await fetchJson(url, { headers });
+//             if (!res || typeof res.status !== 'number')
+//                 throw new Error('Empty response from Docker Hub tags API');
 
-            if (res.status < 200 || res.status >= 300)
-                throw new Error(`Docker Hub tags API returned status ${res.status}`);
+//             if (res.status < 200 || res.status >= 300)
+//                 throw new Error(`Docker Hub tags API returned status ${res.status}`);
 
-            const bodyJson = res.json || null;
-            if (!bodyJson || !Array.isArray(bodyJson.results))
-                break;
+//             const bodyJson = res.json || null;
+//             if (!bodyJson || !Array.isArray(bodyJson.results))
+//                 break;
 
-            combined.push(...bodyJson.results);
+//             combined.push(...bodyJson.results);
 
-            // follow pagination (use ternary for brevity)
-            url = (bodyJson && typeof bodyJson.next === 'string')
-                ? bodyJson.next
-                : null;
+//             // follow pagination (use ternary for brevity)
+//             url = (bodyJson && typeof bodyJson.next === 'string')
+//                 ? bodyJson.next
+//                 : null;
 
-        }
+//         }
 
-        return { results: combined }
+//         return { results: combined }
 
-    } catch (err) {
-        logger.error('Failed to fetch tags from Docker Hub', err.message || err);
-        throw err;
-    }
-}
-
-//- - - - - - - - - - - - -//
-
-// Fetch manifest digest (Docker-Content-Digest) via HEAD on manifest endpoint
-async function fetchManifestDigest(repo, tag, token, { logger = getLogger() } = {}) {
-    
-    if (!token) 
-        return '';
-
-    try {
-        const manifestUrl = `https://registry-1.docker.io/v2/${repo}/manifests/${tag}`;
-        const res = await fetchText(manifestUrl, {
-            method: 'HEAD',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-            }
-        });
-        // find Docker-Content-Digest header; undici can expose headers as array or map
-        let digest = '';
-        const hdrs = res.headers || [];
-        for (const h of hdrs) {
-            if (h && h.name && typeof h.name === 'string' && h.name.toLowerCase() === 'docker-content-digest') {
-                digest = h.value || h.values?.[0] || '';
-                break;
-            }
-        }
-        
-        if (!digest && res.headers && res.headers['docker-content-digest']) 
-            digest = res.headers['docker-content-digest'];
-        
-        if (Array.isArray(digest))
-            digest = digest[0] || '';
-
-        return digest || '';
-
-    } catch (e) {
-        logger.debug && logger.debug('Failed to fetch manifest digest', e.message || e);
-        return '';
-    }
-}
+//     } catch (err) {
+//         logger.error('Failed to fetch tags from Docker Hub', err.message || err);
+//         throw err;
+//     }
+// }
 
 //- - - - - - - - - - - - -//
 
 // Logger that prefers @actions/core when available
+
 function getLogger() {
     const hasCore = !!(core && typeof core.debug === 'function');
-    
-    if (!hasCore) 
+
+    if (!hasCore)
         return console;
-    
+
     return {
         debug: (msg) => core.debug(typeof msg === 'string' ? msg : JSON.stringify(msg)),
         info: (msg) => core.info(typeof msg === 'string' ? msg : JSON.stringify(msg)),
@@ -222,7 +182,7 @@ function getLogger() {
 
 // Centralized output writer: prefers @actions/core, falls back to GITHUB_OUTPUT file, else stdout
 async function setOutput(name, value) {
-    
+
     const json = typeof value === 'string' ? value : JSON.stringify(value);
 
     try {
@@ -232,7 +192,7 @@ async function setOutput(name, value) {
         // if core isn't available or throws, we'll try GITHUB_OUTPUT
     }
 
-    if (!process.env.GITHUB_OUTPUT) 
+    if (!process.env.GITHUB_OUTPUT)
         // Last-resort: print to stdout so local runs can capture it
         console.log(`${name}=${json}`)
 
@@ -243,7 +203,7 @@ async function setOutput(name, value) {
     } catch (e) {
         // ignore and fallthrough to stdout
     }
-    
+
 }
 
 
@@ -261,7 +221,7 @@ async function main() {
     // Fetch tags
     let repoTagsJson;
     try {
-        repoTagsJson = await fetchRepoTags(repo, { dockerUsername, dockerhubToken, pageSize: 100 });
+        repoTagsJson = await fetchRepoTags(repo, { dockerUsername, dockerhubToken }, { pageSize: 100 });
         core.debug(JSON.stringify(repoTagsJson));
     } catch (e) {
         core.error(JSON.stringify({ error: 'fetch-failed', repo }));
@@ -270,7 +230,7 @@ async function main() {
     }
 
 
-    let tag = pickTagFromApiJson(repoTagsJson);
+    let tag = selectLatestTagFromApiJson(repoTagsJson);
     if (!tag) {
         core.error(JSON.stringify({ error: 'no-tag-found', repo }));
         process.exit(3);
@@ -293,15 +253,17 @@ async function main() {
     };
 
     // Print result as JSON and write to the GitHub Actions output
-    const json = JSON.stringify(result);
-    console.log('Result: ',  json);
-    await setOutput('result', json);
+    const json = JSON.stringify(result)
+    getLogger().info('Result: ', json)
+    await setOutput('result', json)
 
 
     process.exit(0);
 }
 
+
 //#########################//
+
 
 // Only run main when executed directly (allows importing functions in tests)
 if (typeof require !== 'undefined' && require.main === module) {

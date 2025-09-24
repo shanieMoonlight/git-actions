@@ -13,13 +13,13 @@ export async function fetchRegistryToken(
 
   try {
 
-    const { dockerUsername, dockerToken } = dockerCredentials
+    const { dockerUsername, dockerhubToken } = dockerCredentials
     const tokenUrl = `https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull`;
 
     
     const headers: Record<string, string> = {};
-    if (dockerUsername && dockerToken) {
-      const auth = Buffer.from(`${dockerUsername}:${dockerToken}`).toString('base64');
+    if (dockerUsername && dockerhubToken) {
+      const auth = Buffer.from(`${dockerUsername}:${dockerhubToken}`).toString('base64');
       headers.Authorization = `Basic ${auth}`;
     }
 
