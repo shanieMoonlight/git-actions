@@ -31,7 +31,7 @@ jobs:
 
 
 
-      - name: Run get-latest-docker-image-tag action on ubuntu/nginx (Public repo)
+      - name: Run get-latest-docker-image-tag action on shaneyboy/movies-client-static (Private repo)
         id: get_latest_tag_movies
         uses: ./actions/get-latest-docker-image-tag
         with:
