@@ -31,25 +31,25 @@ export function extractTagTimestamp(entry: any): number {
 
 //- - - - - - - - - - - - -//
 
-export function selectLatestTagFromApiJson(apiJson: any): string {
+export function selectLatestTagFromApiJson(apiJson: DockerTagsResponse): string {
 
     if (!apiJson || !Array.isArray(apiJson.results))
         return '';
 
     // Normalize and filter results: must have a name and not be 'latest'
     const candidates = apiJson.results
-        .filter((r: any) => r && typeof r.name === 'string')
-        .filter((r: any) => r.name.toLowerCase() !== 'latest');
+        .filter((r: DockerTag) => r && typeof r.name === 'string')
+        .filter((r: DockerTag) => r.name.toLowerCase() !== 'latest');
 
     if (candidates.length === 0)
         return '';
 
     // Prefer timestamp-like names if present among candidates
-    const tsLike = candidates.filter((r: any) => /\d{8}_\d{6}/.test(r.name));
+    const tsLike = candidates.filter((r: DockerTag) => /\d{8}_\d{6}/.test(r.name));
     const pool = tsLike.length > 0 ? tsLike : candidates;
 
     // Sort by computed score (older -> newer) and pick the newest
-    pool.sort((a: any, b: any) => extractTagTimestamp(a) - extractTagTimestamp(b));
+    pool.sort((a: DockerTag, b: DockerTag) => extractTagTimestamp(a) - extractTagTimestamp(b));
     const chosen = pool[pool.length - 1];
 
     return chosen && chosen.name ? chosen.name : '';
