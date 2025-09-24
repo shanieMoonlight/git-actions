@@ -42470,7 +42470,7 @@ function selectLatestTagFromApiJson(apiJson) {
   const chosen = pool[pool.length - 1];
   return chosen && chosen.name ? chosen.name : "";
 }
-async function fetchRepoTags(repo, dockerCredentials = {}, { pageSize = 100, maxPages = 5, logger = console } = {}) {
+async function fetchRepoTags(repo, dockerCredentials = {}, { pageSize = 100, maxPages = 5 } = {}, logger = console) {
   const { dockerUsername, dockerhubToken } = dockerCredentials;
   const base = `https://hub.docker.com/v2/repositories/${repo}/tags/?page_size=${pageSize}`;
   const combined = [];
@@ -42493,11 +42493,11 @@ async function fetchRepoTags(repo, dockerCredentials = {}, { pageSize = 100, max
       if (!bodyJson || !Array.isArray(bodyJson.results))
         break;
       combined.push(...bodyJson.results);
-      url = bodyJson && typeof bodyJson.next === "string" ? bodyJson.next : null;
+      url = bodyJson.next || "";
     }
-    return { results: combined };
+    return { count: combined.length, results: combined, next: url };
   } catch (err) {
-    logger.error && logger.error("Failed to fetch tags from Docker Hub", err.message || err);
+    logger.error("Failed to fetch tags from Docker Hub", err.message || err);
     throw err;
   }
 }

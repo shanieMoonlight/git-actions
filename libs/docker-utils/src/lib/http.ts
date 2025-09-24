@@ -31,7 +31,7 @@ function sleep(ms: number): Promise<void> {
 //- - - - - - - - - - - - -//
 
 
-export async function requestWithTimeout(url: string, opts: any = {}, timeoutMs: number = 10000) {
+export async function requestWithTimeout(url: string, opts: any = {}, timeoutMs = 10000) {
     const controller = new AbortController();
     const signal = controller.signal;
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -47,15 +47,15 @@ export async function requestWithTimeout(url: string, opts: any = {}, timeoutMs:
 
 //- - - - - - - - - - - - -//
 
-export async function fetchText(url: string, opts: any = {}, attempts: number = 3, timeoutMs: number = 10000) {
-   
+export async function fetchText(url: string, opts: any = {}, attempts = 3, timeoutMs = 10000) {
+
     let lastErr: Error | null = null;
-   
+
     for (let i = 1; i <= attempts; i++) {
         try {
             const res = await requestWithTimeout(url, opts, timeoutMs);
             // handle 429 (rate limit) — return early for non-429 to avoid nesting
-            if (res.status !== 429) 
+            if (res.status !== 429)
                 return res;
 
             const ra = res.headers['retry-after'];
@@ -66,7 +66,7 @@ export async function fetchText(url: string, opts: any = {}, attempts: number = 
             }
             await sleep(wait);
             continue;
-        } catch (e : any) {
+        } catch (e: any) {
             lastErr = e;
             // exponential backoff
             const backoff = Math.pow(2, i - 1) * 500;
@@ -78,12 +78,12 @@ export async function fetchText(url: string, opts: any = {}, attempts: number = 
 
 //- - - - - - - - - - - - -//
 
-export async function fetchJson(url: string, opts: any = {}, attempts: number = 3, timeoutMs: number = 10000) {
+export async function fetchJson(url: string, opts: any = {}, attempts = 3, timeoutMs = 10000) {
     const res = await fetchText(url, opts, attempts, timeoutMs);
     let json = null;
     try {
         json = JSON.parse(res.body);
-    } catch (e) {
+    } catch (e: unknown) {
         json = null;
     }
 

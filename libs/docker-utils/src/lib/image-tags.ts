@@ -1,6 +1,7 @@
 import { DockerCredentials } from './docker-credentials.js';
 import { fetchJson, fetchText } from './http.js';
-import { DockerTagsResponse } from './image-tag-respoonses.js';
+import { ILogger } from './i-logger.js';
+import { DockerTag, DockerTagsResponse } from './image-tag-responses.js';
 
 //#########################//
 
@@ -59,13 +60,14 @@ export function selectLatestTagFromApiJson(apiJson: any): string {
 export async function fetchRepoTags(
     repo: string,
     dockerCredentials: DockerCredentials = {},
-    { pageSize = 100, maxPages = 5, logger = console } = {}
+    { pageSize = 100, maxPages = 5 } = {},
+    logger: ILogger = console
 ): Promise<DockerTagsResponse> {
 
     const { dockerUsername, dockerhubToken } = dockerCredentials
 
     const base = `https://hub.docker.com/v2/repositories/${repo}/tags/?page_size=${pageSize}`;
-    const combined: any[] = [];
+    const combined: DockerTag[] = [];
     let url = base;
     let page = 0;
 
@@ -98,7 +100,7 @@ export async function fetchRepoTags(
         return { count: combined.length, results: combined, next: url };  // Adjust to match interface
 
     } catch (err: any) {
-        logger.error && logger.error('Failed to fetch tags from Docker Hub', err.message || err);
+        logger.error('Failed to fetch tags from Docker Hub', err.message || err);
         throw err;
     }
 }
@@ -107,7 +109,7 @@ export async function fetchRepoTags(
 
 export async function fetchManifestDigest(repo: string, tag: string, authToken: string): Promise<string> {
 
-    if (!authToken) 
+    if (!authToken)
         return '';
 
     try {
