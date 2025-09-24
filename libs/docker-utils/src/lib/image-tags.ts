@@ -1,5 +1,6 @@
 import { DockerCredentials } from './docker-credentials.js';
 import { fetchJson, fetchText } from './http.js';
+import { DockerTagsResponse } from './image-tag-respoonses.js';
 
 //#########################//
 
@@ -59,7 +60,7 @@ export async function fetchRepoTags(
     repo: string,
     dockerCredentials: DockerCredentials = {},
     { pageSize = 100, maxPages = 5, logger = console } = {}
-): Promise<{ results: any[] }> {
+): Promise<DockerTagsResponse> {
 
     const { dockerUsername, dockerhubToken } = dockerCredentials
 
@@ -84,19 +85,17 @@ export async function fetchRepoTags(
             if (res.status < 200 || res.status >= 300)
                 throw new Error(`Docker Hub tags API returned status ${res.status}`);
 
-            const bodyJson = res.json || null;
+            const bodyJson: DockerTagsResponse | null = res.json || null;
             if (!bodyJson || !Array.isArray(bodyJson.results))
                 break;
 
             combined.push(...bodyJson.results);
 
             // follow pagination
-            url = (bodyJson && typeof bodyJson.next === 'string')
-                ? bodyJson.next
-                : null;
+            url = bodyJson.next || '';
         }
 
-        return { results: combined };
+        return { count: combined.length, results: combined, next: url };  // Adjust to match interface
 
     } catch (err: any) {
         logger.error && logger.error('Failed to fetch tags from Docker Hub', err.message || err);
