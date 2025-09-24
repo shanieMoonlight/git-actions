@@ -42698,7 +42698,7 @@ async function main() {
       const statePath = `state/${name}.json`;
       (0, fs_1.writeFileSync)(statePath, JSON.stringify(result, null, 2));
       core.info(`Resolved: ${JSON.stringify(result)}`);
-      const ref = result.digest ? `${result.repository}@${result.digest}` : `${result.repository}:${result.tag}`;
+      const ref = `${result.repository}:${result.tag}`;
       template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"), ref);
     } catch (e) {
       core.error(`Failed to process service ${name}: ${e.message}`);
