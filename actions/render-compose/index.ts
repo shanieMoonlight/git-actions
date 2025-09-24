@@ -1,17 +1,37 @@
 import * as core from '@actions/core';
 import {
-    fetchManifestDigest,
-    fetchRegistryToken,
-    fetchRepoTags,
-    selectLatestTagFromApiJson
+  fetchManifestDigest,
+  fetchRegistryToken,
+  fetchRepoTags,
+  selectLatestTagFromApiJson
 } from '@git-actions/docker-utils';
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import process from 'process';
 
 //##############################################//
 
+interface ServiceConfig {
+  name: string;
+  repo: string;
+  placeholder: string;
+}
+
+interface ServicesConfig {
+  services: ServiceConfig[];
+}
+
+interface ResolvedTag {
+  repository: string;
+  tag: string;
+  digest: string;
+  picked_at: string;
+  ref: string;
+}
+
+//##############################################//
+
 // Resolve latest tag for a repo
-async function resolveLatestTag(repo, dockerUsername, dockerhubToken) {
+async function resolveLatestTag(repo: string, dockerUsername: string, dockerhubToken: string): Promise<ResolvedTag> {
     try {
        
         const repoTagsJson = await fetchRepoTags(repo, { dockerUsername, dockerhubToken }, {}, console);
@@ -34,20 +54,20 @@ async function resolveLatestTag(repo, dockerUsername, dockerhubToken) {
 
         return result;
     } catch (err) {
-        throw new Error(`Failed to resolve tag for ${repo}: ${err.message}`);
+        throw new Error(`Failed to resolve tag for ${repo}: ${(err as Error).message}`);
     }
 }
 
 //##############################################//
 
-async function main() {
+async function main(): Promise<void> {
     const templatePath = core.getInput('template', { required: true });
     const servicesPath = core.getInput('services', { required: true });
     const dockerUsername = core.getInput('docker_username') || '';
     const dockerhubToken = core.getInput('dockerhub_token') || '';
 
     // Read template
-    let template;
+    let template: string;
     try {
         template = readFileSync(templatePath, 'utf8');
     } catch (e) {
@@ -56,7 +76,7 @@ async function main() {
     }
 
     // Read services JSON
-    let services;
+    let services: ServicesConfig;
     try {
         const servicesContent = readFileSync(servicesPath, 'utf8');
         services = JSON.parse(servicesContent);
@@ -64,7 +84,7 @@ async function main() {
             throw new Error('Invalid services JSON: missing services array');
         }
     } catch (e) {
-        core.error(`Failed to read/parse services JSON: ${servicesPath} - ${e.message}`);
+        core.error(`Failed to read/parse services JSON: ${servicesPath} - ${(e as Error).message}`);
         process.exit(1);
     }
 
@@ -95,7 +115,7 @@ async function main() {
             const ref = result.digest ? `${result.repository}@${result.digest}` : `${result.repository}:${result.tag}`;
             template = template.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), ref);
         } catch (e) {
-            core.error(`Failed to process service ${name}: ${e.message}`);
+            core.error(`Failed to process service ${name}: ${(e as Error).message}`);
             process.exit(1);
         }
     }

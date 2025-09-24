@@ -1,5 +1,5 @@
-name: 'render-compose-js'
-description: 'Render docker-compose.yml from a template and services list (JavaScript version)'
+name: 'render-compose-ts'
+description: 'Render docker-compose.yml from a template and services list (TypeScript version)'
 inputs:
   template:
     description: 'Path to docker-compose template'

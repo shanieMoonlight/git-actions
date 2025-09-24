@@ -1,10 +1,10 @@
-# Render Compose (JavaScript)
+# Render Compose (TypeScript)
 
 A GitHub Action that renders a `docker-compose.yml` file from a template by resolving the latest Docker image tags for specified services.
 
 ## Description
 
-This JavaScript action takes a template file and a services configuration JSON, then dynamically resolves the latest available tags for each service from Docker Hub. It replaces placeholders in the template with the resolved image references and generates a complete `docker-compose.yml` file.
+This TypeScript action takes a template file and a services configuration JSON, then dynamically resolves the latest available tags for each service from Docker Hub. It replaces placeholders in the template with the resolved image references and generates a complete `docker-compose.yml` file.
 
 For each service, the action:
 - Queries Docker Hub's API for available tags
